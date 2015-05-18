@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename local variable &apos;amount&apos; in &apos;il.ac.technion.cs.sd.app.mail.ClientMailApplication.getContacts(...)&apos; to &apos;count&apos;&#x0D;&#x0A;- Original project: &apos;app-mail-client&apos;&#x0D;&#x0A;- Original element: &apos;il.ac.technion.cs.sd.app.mail.ClientMailApplication.getContacts(int).amount&apos;&#x0D;&#x0A;- Renamed element: &apos;amount&apos;&#x0D;&#x0A;- Update references to refactored element" description="Rename local variable &apos;amount&apos;" id="org.eclipse.jdt.ui.rename.local.variable" input="/src\/main\/java&lt;il.ac.technion.cs.sd.app.mail{ClientMailApplication.java[ClientMailApplication~getContacts~I@amount!5114!5180!5118!5123!I!0!false" name="count" references="true" stamp="1431871625618" version="1.0"/>
+</session>

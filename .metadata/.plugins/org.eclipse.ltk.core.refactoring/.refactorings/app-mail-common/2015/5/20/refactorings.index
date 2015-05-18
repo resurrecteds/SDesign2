@@ -1,0 +1,8 @@
+1431369768786	Rename type 'ServerUserMapper'
+1431371861805	Delete element
+1431449895482	Rename local variable 'content'
+1431449907775	Rename local variable 'username'
+1431449913469	Rename local variable 'content'
+1431463524558	Rename local variable 'reciever'
+1431464197700	Rename local variable 'message'
+1431473844600	Rename method 'addMailSentToUser'

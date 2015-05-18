@@ -1,0 +1,13 @@
+package il.ac.technion.cs.sd.app.mail;
+
+import org.json.JSONObject;
+
+class SendMailRequest {
+	SendMailRequest(String from, String to, String content) {
+		
+	}
+	
+	JSONObject getJsonObject() {
+		
+	}
+}

@@ -1,0 +1,9 @@
+package il.ac.technion.cs.sd.app.mail;
+
+class SendMailRequest {
+	SendMailRequest(String from, String to, String content) {
+		
+	}
+	
+	
+}

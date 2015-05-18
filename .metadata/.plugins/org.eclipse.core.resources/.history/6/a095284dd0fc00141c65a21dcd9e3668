@@ -1,0 +1,226 @@
+package il.ac.technion.cs.sd.app.mail;
+
+import il.ac.technion.cs.sd.msg.Messenger;
+import il.ac.technion.cs.sd.msg.MessengerException;
+import il.ac.technion.cs.sd.msg.MessengerFactory;
+
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.json.JSONObject;
+
+class Server {
+	
+	
+	
+	private String name;
+	private String address;
+	private static final String FROM_STRING = "from";
+	private Messenger _messenger;
+	
+	private HashMap<String, ArrayList<String>> userToContacts = new HashMap<>();
+	
+	private HashMap<String, LinkedList<Mail>> userToMailsSent = new HashMap<>();
+	private Map<String, LinkedList<Mail>> userToAllMails = new HashMap<>();
+	private Map<String, LinkedList<Mail>> userToNewMails = new HashMap<>();
+	
+	
+	Server(String name, String address) {
+		this.name = name;
+		this.address = address;
+		try {
+			_messenger = new MessengerFactory().start(address);
+		}
+		catch (MessengerException e) {
+			e.printStackTrace();
+			throw new RuntimeException();
+		}
+	}
+	
+	String getAddress() {
+		return address;
+	}
+	
+	private void addMailSentFromUser(String sender, Mail mail) {
+		LinkedList<Mail> list = (LinkedList<Mail>) userToMailsSent.get(sender);
+		if (list == null) {
+			list = new LinkedList<Mail>();
+		}
+		list.addFirst(mail);
+		userToMailsSent.put(sender, list);
+	}
+	
+	private void addNewMessageToUser(String receiver, Mail mail) {
+		LinkedList<Mail> list = (LinkedList<Mail>) userToNewMails.get(receiver);
+		if (list == null) {
+			list = new LinkedList<Mail>();
+		}
+		list.addFirst(mail);
+		userToNewMails.put(receiver, list);
+	}
+	
+	private void addMailToUser(String receiver, Mail mail) {
+		LinkedList<Mail> list = (LinkedList<Mail>) userToAllMails.get(receiver);
+		if (list == null) {
+			list = new LinkedList<Mail>();
+		}
+		list.addFirst(mail);
+		userToAllMails.put(receiver, list);
+	}
+	
+//	private List<Mail> getUserMails(String username) {
+//		return userToAllMails.get(username);
+//	}
+	
+	void start() {
+		// TODO - Load data from database
+		try {
+			while(true) {
+				// start listening to messages
+				System.out.println("Listening...");
+				String request = new String(_messenger.listen());
+				// received message - handle request
+				handleRequest(request); // TODO - continue implementing
+				
+				
+				System.out.println("Server Recieved: " + request);
+//				String[] tokens = request.split(">");
+//				String sender = tokens[0];
+//				String whom = tokens[1];
+//				request = tokens[2];
+				
+//				if (request.equals("GET NEW MAIL")) {
+//					List<String> allMails = getUserMails(sender);
+//					
+//					
+//					JSONObject json = new JSONObject();
+//					json.put("answer", allMails);
+////					json.writeJSONString(out);
+//					Writer writer = new StringWriter();
+//					json.write(writer);
+//					String jsonString = json.toString();
+//					
+//					_messenger.send(sender, jsonString.getBytes());
+//				} 
+//				else {
+//					addMailSentToUser(sender, request); // outbox of the sender
+//					addNewMessageToUser(whom, request);					
+//				}
+				
+				
+				
+//				UserMessagesMapper.getInstance().addMessageToUser(sender, whom, message);
+				
+			}
+		}
+		catch (MessengerException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void handleRequest(String request) {
+		JSONObject json = new JSONObject(request);
+		Integer type = (Integer) json.get("type");
+		
+		if (type == RequestType.SEND_MAIL.ordinal()) {
+			String sender = json.getString("from");
+			String whom = json.getString("to");
+			String message = json.getString("message");
+			Mail mail = new Mail(sender, whom, message);
+			addMailSentFromUser(sender, mail); // outbox of the sender
+			addNewMessageToUser(whom, mail);
+			addMailToUser(sender, mail);
+			addMailToUser(whom, mail);
+			return;
+		}
+		
+		if (type == RequestType.REQUEST_GET_NEW_MAIL.ordinal()) {
+			String username = json.getString("from");
+			// TODO - change it later to New Mails
+			List<Mail> list = userToAllMails.get(username);
+//			if (list == null) {
+//			}
+			JSONObject answerJson = new JSONObject();
+			answerJson.put(ResponseType.RESPONSE_KEY, ResponseType.GET_NEW_MAIL);
+			List<String> mailStrings = mailListToStringList(list);
+			answerJson.put("maillist", mailStrings);
+			try {
+				_messenger.send(username, answerJson.toString().getBytes());
+			}
+			catch (MessengerException e) {
+				e.printStackTrace();
+				throw new RuntimeException();
+			}
+			return;
+		}
+		
+		if (type == RequestType.REQUEST_GET_ALL_MAIL.ordinal()) {
+			String username = json.getString("from");
+			List<Mail> list = userToAllMails.get(username);
+			JSONObject answerJson = new JSONObject();
+
+			answerJson.put(ResponseType.RESPONSE_KEY, ResponseType.GET_ALL_MAIL);
+			List<String> mailStrings = mailListToStringList(list);
+			answerJson.put("maillist", mailStrings);
+			try {
+				_messenger.send(username, answerJson.toString().getBytes());
+			}
+			catch (MessengerException e) {
+				e.printStackTrace();
+				throw new RuntimeException();
+			}
+			return;
+		}
+		
+		if (type == RequestType.REQUEST_CONTACTS.ordinal()) {
+			String sender = json.getString("from");
+			List<String> contacts = userToContacts.get(sender);
+			
+			JSONObject answerJson = new JSONObject();
+			answerJson.put(ResponseType.RESPONSE_KEY, ResponseType.GET_CONTACTS);
+			List<String> contacts = 
+			
+			
+		}
+		
+		throw new UnsupportedOperationException("missing case");
+	}
+
+	private List<String> mailListToStringList(List<Mail> mails) {
+		List<String> strings = new LinkedList<String>();
+		for (Mail mail : mails) {
+			String mailStr = mail.toString();
+			strings.add(mailStr);
+		}
+		return strings;
+	}
+	
+	private void userToAllMails(String whom, String message) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	void getIncomingMail() {
+		
+	}
+
+	void stop() {
+		try {
+			_messenger.kill();
+		}
+		catch (MessengerException e) {
+			e.printStackTrace();
+			throw new RuntimeException();
+		}
+	}
+	
+	void clean() {
+		// TODO - Remove database
+		throw new UnsupportedOperationException("Not implemented");
+	}
+}

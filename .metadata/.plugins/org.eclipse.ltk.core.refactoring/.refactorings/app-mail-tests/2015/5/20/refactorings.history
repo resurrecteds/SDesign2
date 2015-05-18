@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename local variable &apos;login&apos; in &apos;il.ac.technion.cs.sd.app.mail.TMailTest.buildClient(...)&apos; to &apos;username&apos;&#x0D;&#x0A;- Original project: &apos;app-mail-tests&apos;&#x0D;&#x0A;- Original element: &apos;il.ac.technion.cs.sd.app.mail.TMailTest.buildClient(String).login&apos;&#x0D;&#x0A;- Renamed element: &apos;login&apos;&#x0D;&#x0A;- Update references to refactored element" description="Rename local variable &apos;login&apos;" id="org.eclipse.jdt.ui.rename.local.variable" input="/src\/test\/java&lt;il.ac.technion.cs.sd.app.mail{TMailTest.java[TMailTest~buildClient~QString;@login!485!496!492!496!QString;!0!true" name="username" references="true" stamp="1431360293797" version="1.0"/>
+</session>

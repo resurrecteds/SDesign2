@@ -1,0 +1,29 @@
+package il.ac.technion.cs.sd.app.mail;
+
+enum RequestType {
+//	final String TYPE = "type";?
+	
+	
+	SEND_MAIL {
+		public String toString() {
+			return "SEND_MAIL";
+		}
+	},
+	
+	REQUEST_GET_NEW_MAIL {
+		public String toString() {
+			return "GET NEW MAIL";
+		}
+		
+		public int value() {
+			return 2;
+		}
+	};
+	
+	public int getValue() {
+		if (this.equals("SEND_MAIL")) {
+			return 1;
+		}
+		return 0;
+	}
+}

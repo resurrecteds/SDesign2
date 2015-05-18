@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename field &apos;keyfsdf&apos; in &apos;il.ac.technion.cs.sd.app.mail.ResponseType&apos; to &apos;key&apos;&#x0D;&#x0A;- Original project: &apos;app-mail-common&apos;&#x0D;&#x0A;- Original element: &apos;il.ac.technion.cs.sd.app.mail.ResponseType.keyfsdf&apos;&#x0D;&#x0A;- Renamed element: &apos;il.ac.technion.cs.sd.app.mail.ResponseType.key&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" delegate="false" deprecate="false" description="Rename field &apos;keyfsdf&apos;" flags="589830" getter="false" id="org.eclipse.jdt.ui.rename.field" input="/src\/main\/java&lt;il.ac.technion.cs.sd.app.mail{ResponseType.java[ResponseType^keyfsdf" name="key" references="true" setter="false" stamp="1431877757889" textual="false" version="1.0"/>
+</session>

@@ -1,0 +1,36 @@
+package il.ac.technion.cs.sd.app.mail;
+
+
+class ResponseType {
+	final String key;
+	ResponseType(String key) {
+		this.key = key;
+	}
+	static final String RESPONSE = "response";
+	static final String GET_NEW_MAIL = "GET NEW MAIL";
+	static final String GET_ALL_MAIL = "GET ALL MAIL";
+	
+	
+	
+//	RESPONSE("response");
+	// 0
+//	SEND_MAIL {
+//		public String toString() {
+//			return "SEND_MAIL";
+//		}
+//	},
+//	
+//	// 1
+//	RESPONSE_GET_NEW_MAIL {
+//		public String toString() {
+//			return "GET NEW MAIL";
+//		}
+//	},
+//	
+//	// 2
+//	RESPONSE_GET_ALL_MAIL {
+//		public String toString() {
+//			return "GET ALL MAIL";
+//		}
+//	}
+}

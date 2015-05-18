@@ -1,0 +1,18 @@
+package il.ac.technion.cs.sd.app.mail;
+
+import org.json.JSONObject;
+
+class SendMailRequest {
+	JSONObject json;
+	SendMailRequest(String sender) {
+		json = new JSONObject();
+		json.put("type", RequestType.REQUEST_GET_NEW_MAIL.ordinal());
+		json.put("from", sender);
+		json.put("to", to);
+		json.put("message", message);
+	}
+	
+	JSONObject getJsonObject() {
+		return json;
+	}
+}

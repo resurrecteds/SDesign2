@@ -1,0 +1,47 @@
+package il.ac.technion.cs.sd.app.mail;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+public class UserMessagesMapper {
+
+	private static UserMessagesMapper instance = null;
+	private HashMap<String, LinkedList<Mail>> userToIncomingMessages = new HashMap<String, LinkedList<Mail>>();
+
+	static UserMessagesMapper getInstance() {
+		if (instance == null) {
+			instance = new UserMessagesMapper();
+		}
+		return instance;
+	}
+
+	private UserMessagesMapper() {
+	}
+
+	void addMessageToUser(String sender, String username, String message) {
+		synchronized (message) {
+			LinkedList<Mail> list =(LinkedList<Mail>) userToIncomingMessages
+			.get(username);
+		}
+		 
+		Mail mail = new Mail(sender, username, message);
+		if (list == null) {
+			// create the key and the user
+			list = new LinkedList<Mail>();
+		}
+		list.addFirst(mail);
+		userToIncomingMessages.put(username, list);
+	}
+
+	List<Mail> getMessagesForUser(String username) {
+		List<Mail> list = userToIncomingMessages.get(username);
+		System.out.println(userToIncomingMessages);
+		if (list == null) {
+			System.out.println("list is null");
+		}
+		
+		return list;
+	}
+
+}

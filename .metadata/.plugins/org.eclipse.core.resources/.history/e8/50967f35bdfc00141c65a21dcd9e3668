@@ -1,0 +1,33 @@
+package il.ac.technion.cs.sd.app.mail;
+
+enum RequestType {
+//	final String TYPE = "type";?
+	
+	// 0
+	SEND_MAIL {
+		public String toString() {
+			return "SEND_MAIL";
+		}
+	},
+	
+	// 1
+	REQUEST_GET_NEW_MAIL {
+		public String toString() {
+			return "GET NEW MAIL";
+		}
+	},
+	
+	// 2
+	REQUEST_GET_ALL_MAIL {
+		public String toString() {
+			return "GET ALL MAIL";
+		}
+	}
+	
+	REQUEST_GET_ALL_MAIL {
+		public String toString() {
+			return "GET ALL MAIL";
+		}
+	}
+	
+}

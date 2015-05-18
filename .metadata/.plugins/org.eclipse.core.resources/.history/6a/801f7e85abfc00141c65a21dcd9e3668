@@ -1,0 +1,28 @@
+package il.ac.technion.cs.sd.app.mail;
+
+enum ResponseType {
+	RESPONSE("response");
+	ResponseType(String key) {
+		
+	}
+	// 0
+//	SEND_MAIL {
+//		public String toString() {
+//			return "SEND_MAIL";
+//		}
+//	},
+//	
+//	// 1
+//	RESPONSE_GET_NEW_MAIL {
+//		public String toString() {
+//			return "GET NEW MAIL";
+//		}
+//	},
+//	
+//	// 2
+//	RESPONSE_GET_ALL_MAIL {
+//		public String toString() {
+//			return "GET ALL MAIL";
+//		}
+//	}
+}

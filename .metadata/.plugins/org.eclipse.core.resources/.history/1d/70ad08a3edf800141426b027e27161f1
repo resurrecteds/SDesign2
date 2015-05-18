@@ -1,0 +1,28 @@
+package il.ac.technion.cs.sd.app.mail;
+
+enum RequestType {
+//	final String TYPE = "type";?
+	
+	
+	SEND_MAIL {
+		public String toString() {
+			return "SEND_MAIL";
+		}
+		
+		@SuppressWarnings("unused")
+		public int value() {
+			return 1;
+		}
+		
+	},
+	
+	REQUEST_GET_NEW_MAIL {
+		public String toString() {
+			return "GET NEW MAIL";
+		}
+		
+		int value() {
+			return 2;
+		}
+	};
+}
