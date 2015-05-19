@@ -1,17 +1,11 @@
 package il.ac.technion.cs.sd.app.mail;
 
-import il.ac.technion.cs.sd.msg.Messenger;
-import il.ac.technion.cs.sd.msg.MessengerException;
-import il.ac.technion.cs.sd.msg.MessengerFactory;
 
 /**
  * The server side of the TMail application. <br>
  * This class is mainly used in our tests to start, stop, and clean the server
  */
 public class ServerMailApplication {
-	
-	private String _name;
-	private Messenger _messenger;
 	
 	private Server server;
 	

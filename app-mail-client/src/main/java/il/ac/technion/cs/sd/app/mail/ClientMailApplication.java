@@ -4,14 +4,9 @@ import il.ac.technion.cs.sd.msg.Messenger;
 import il.ac.technion.cs.sd.msg.MessengerException;
 import il.ac.technion.cs.sd.msg.MessengerFactory;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -69,7 +64,16 @@ public class ClientMailApplication {
 	 * of size n <i>at most</i>  
 	 */
 	public List<Mail> getCorrespondences(String whom, int howMany) {
-		throw new UnsupportedOperationException("Not implemented");
+		try {
+			JSONObject json = new GetCorrespondecesRequest(username, whom, howMany).getJsonObject();
+			String message = json.toString();
+			System.out.println("Sending mail: " + message);
+			messenger.send(serverAddress, message.getBytes());
+		}
+		catch(MessengerException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	/**
@@ -99,7 +103,7 @@ public class ClientMailApplication {
 	 *  arrival, of size n <i>at most</i>  
 	 */
 	public List<Mail> getAllMail(int howMany) {
-		List<Mail> mails = new ArrayList<>();
+		List<Mail> mails = null; // shouldn't be null at the end
 		try {
 			JSONObject json = new NewMailRequest(username).getJsonObject();
 			String message = json.toString();
@@ -113,7 +117,7 @@ public class ClientMailApplication {
 			String response = (String) answerJson.get(ResponseType.RESPONSE_KEY);
 //			handleResponse((String) answerJson.get(ResponseType.RESPONSE_KEY));
 			assert(response == ResponseType.GET_ALL_MAIL);
-			mails = stringListToMailList(answerJson.getJSONArray(CommunicationKey.ALL_MAILS_KEY));
+			mails = stringListToMailList(answerJson.getJSONArray(CommunicationKey.ALL_MAILS_KEY), howMany);
 		}
 		catch (MessengerException e) {
 			e.printStackTrace();
@@ -141,7 +145,7 @@ public class ClientMailApplication {
 	public List<Mail> getNewMail() {
 //		return UserMessagesMapper.getInstance().getMessagesForUser(username);
 //		String message = username + ">" + serverAddress + ">" + "GET NEW MAIL";
-		List<Mail> mails = null;
+		List<Mail> mails = new LinkedList<Mail>();
 		try {
 			JSONObject json = new NewMailRequest(username).getJsonObject();
 			String message = json.toString();
@@ -152,7 +156,8 @@ public class ClientMailApplication {
 			JSONObject answerJson = new JSONObject(answer);
 			assert(answerJson.get(ResponseType.RESPONSE_KEY) == ResponseType.GET_NEW_MAIL);
 			// TODO - here the key was the one for ALL_MAILS_KEY - so now it shouldn't work
-			mails = stringListToMailList(answerJson.getJSONArray(CommunicationKey.NEW_MAILS_KEY));
+			mails = stringListToMailList(answerJson.getJSONArray(CommunicationKey.NEW_MAILS_KEY), -1);
+			
 		}
 		catch (MessengerException e) {
 			e.printStackTrace();
@@ -161,9 +166,13 @@ public class ClientMailApplication {
 		return mails;
 	}
 	
-	private List<Mail> stringListToMailList(JSONArray jsonMails) {
+	private List<Mail> stringListToMailList(JSONArray jsonMails, int howMany) {
 		List<Mail> mails = new LinkedList<Mail>();
 		int length = jsonMails.length();
+		if (howMany != -1) {
+			length = length > howMany ? howMany : length;
+		}
+		
 		for (int i = 0; i < length; ++i) {
 			String str = jsonMails.get(i).toString();
 			String[] tokens = str.split("%");
@@ -203,12 +212,6 @@ public class ClientMailApplication {
 		}
 		assert(contacts != null);
 		return contacts;
-//		int count = contacts.size() > howMany ? howMany : contacts.size();
-//		List<String> conts = new ArrayList<String>(count);
-//		for (int i = 0; i < count; i++) {
-//			conts.add(i, contacts.get(i));
-//		}
-//		return conts;
 	}
 	
 	/**
@@ -216,6 +219,12 @@ public class ClientMailApplication {
 	 * This is mainly used to clean resource use in test cleanup code.
 	 */
 	public void stop() {
-		
+		try {
+			messenger.kill();
+		}
+		catch (MessengerException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
 	}
 }

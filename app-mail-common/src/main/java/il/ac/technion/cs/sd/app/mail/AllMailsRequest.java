@@ -3,8 +3,8 @@ package il.ac.technion.cs.sd.app.mail;
 import org.json.JSONObject;
 
 class AllMailsRequest {
-	JSONObject json;
-	int amountToRetrieve;
+	private JSONObject json;
+	private int amountToRetrieve;
 	AllMailsRequest(String sender, int amountToRetrieve) {
 		this.amountToRetrieve = amountToRetrieve;
 		

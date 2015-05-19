@@ -24,9 +24,11 @@ public class TMailTest {
 	}
 	
 	@Before 
-	public void setup() {
+	public void setup() throws InterruptedException {
 		serverThread = new Thread(() -> server.start());
 		serverThread.start();
+		Thread.yield();
+		Thread.sleep(100);
 	}
 	
 	@SuppressWarnings("deprecation") // "I know what I'm doing"
@@ -53,7 +55,7 @@ public class TMailTest {
 //	}
 	
 	@Test
-	public void testGetContacts() {
+	public void testGetContacts() throws Exception {
 		ClientMailApplication gal = buildClient("Gal");
 		gal.sendMail("Itay", "Hi");
 		ClientMailApplication itay = buildClient("Itay");

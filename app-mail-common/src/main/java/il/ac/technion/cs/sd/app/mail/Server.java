@@ -6,6 +6,7 @@ import il.ac.technion.cs.sd.msg.MessengerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -25,16 +26,18 @@ class Server {
 	private File databaseFile = new File("serialization.dat");
 	private ServerDatabase database = new ServerDatabase();
 	
-	private String name;
-	private String address;
+	private enum State {
+		RUNNING,
+		STOPPED,
+		UNKNOWN
+	}
+	
+	private State state = State.UNKNOWN;
+	
+	private final String name;
+	private final String address;
 	private static final String FROM_KEY = "from";
 	private Messenger _messenger;
-	
-//	private HashMap<String, ArrayList<String>> userToContacts = new HashMap<>();
-//	private HashMap<String, LinkedList<Mail>> userToMailsSent = new HashMap<>();
-//	private Map<String, LinkedList<Mail>> userToAllMails = new HashMap<>();
-//	private Map<String, LinkedList<Mail>> userToNewMails = new HashMap<>();
-	
 	
 	Server(String name, String address) {
 		this.name = name;
@@ -44,7 +47,7 @@ class Server {
 		}
 		catch (MessengerException e) {
 			e.printStackTrace();
-			throw new RuntimeException();
+			throw new RuntimeException(e);
 		}
 	}
 	
@@ -52,14 +55,24 @@ class Server {
 		return address;
 	}
 	
-	
-	
-//	private List<Mail> getUserMails(String username) {
-//		return userToAllMails.get(username);
-//	}
-	
 	void start() {
+		state = State.RUNNING;
 		// TODO - Load data from database
+//		try {
+//			if (databaseFile.exists()) {
+//				readState();
+//			}
+//		}
+//		catch (FileNotFoundException e) {
+//			// database is already initialized so nothing to do here
+//		}
+//		catch (IOException e) {
+//			// Fucking stupid
+//			e.printStackTrace();
+//			throw new RuntimeException();
+//		}
+		
+		
 		try {
 			while(true) {
 				// start listening to messages
@@ -68,11 +81,14 @@ class Server {
 				// received message - handle request
 				handleRequest(request); // TODO - continue implementing
 				
-				System.out.println("Server Recieved: " + request);				
+				System.out.println("Server Received: " + request);				
 			}
 		}
 		catch (MessengerException e) {
 			e.printStackTrace();
+		}
+		catch (Exception e) {
+			System.out.println("Exception: " + e.getMessage());
 		}
 	}
 	
@@ -164,30 +180,31 @@ class Server {
 		return strings;
 	}
 	
-	
-	
-	private void userToAllMails(String whom, String message) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	void getIncomingMail() {
 		
 	}
 
 	void stop() {
+		// save the database before stopping
+//		saveState();
 		try {
+			if (state == State.STOPPED) {
+				// nothing to do here
+				return;
+			}
+			state = State.STOPPED;
 			_messenger.kill();
 		}
 		catch (MessengerException e) {
 			e.printStackTrace();
-			throw new RuntimeException();
+			throw new RuntimeException(e);
 		}
 	}
 	
 	void clean() {
 		// Stop the server
-		stop();
+		stop(); // you can't stop the server more than once
+		state = State.UNKNOWN;
 		databaseFile.delete();
 	}
 	
@@ -207,24 +224,19 @@ class Server {
 		}
 		catch (IOException e) {
 			e.printStackTrace();
+			databaseFile.delete(); // TODO - MAYBE DELETE THIS LINE
 			throw new RuntimeException();
 		}
 	}
 
-	private void readState() {
+	private void readState() throws IOException {
+		FileInputStream fileinput = new FileInputStream(databaseFile);
+		ObjectInputStream objectStream = new ObjectInputStream(fileinput);
 		try {
-			FileInputStream fileinput = new FileInputStream(databaseFile);
-			ObjectInputStream objectStream = new ObjectInputStream(fileinput);
-			try {
-				database = (ServerDatabase) objectStream.readObject();
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-			fileinput.close();
-		}
-		catch (IOException e) {
+			database = (ServerDatabase) objectStream.readObject();
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			throw new RuntimeException();
 		}
+		fileinput.close();
 	}
 }

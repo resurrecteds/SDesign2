@@ -25,7 +25,7 @@ class ServerDatabase implements Serializable {
 		}
 		
 		int index = Collections.binarySearch(contacts, newContact);
-		if (index > 0) {
+		if (index >= 0) {
 			// the contact exists -> nothing to do
 			return;
 		}
