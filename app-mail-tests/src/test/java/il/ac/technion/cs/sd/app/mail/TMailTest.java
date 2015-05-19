@@ -63,7 +63,7 @@ public class TMailTest {
 	}
 	
 	@Test
-	public void getContactShouldReturnAlphabetically() {
+	public void getContactsShouldReturnContactsAlphabetically() {
 		ClientMailApplication gal = buildClient("Gal");
 		gal.sendMail("Itay", "AAA");
 		gal.sendMail("Abba", "BBB");
@@ -71,18 +71,55 @@ public class TMailTest {
 		gal.sendMail("Yoni", "DDD");
 		gal.sendMail("Bloch", "EEE");
 		gal.sendMail("Safta", "FFF");
-//		ClientMailApplication itay = buildClient("Itay");
 		ClientMailApplication Abba = buildClient("Abba");
-//		ClientMailApplication Imma = buildClient("Imma");
-//		ClientMailApplication Yoni = buildClient("Yoni");
-//		ClientMailApplication Bloch = buildClient("Bloch");
-//		ClientMailApplication Safta = buildClient("Safta");
-		
-		
 		assertEquals(Abba.getNewMail(), Arrays.asList(new Mail("Gal", "Abba", "BBB")));
 		assertEquals(gal.getContacts(1), Arrays.asList(new String("Abba")));
 	}
+	
+	@Test
+	public void contactsShouldBeOrderedAlphabetically() {
+		ClientMailApplication gal = buildClient("Gal");
+		gal.sendMail("Itay", "AAA");
+		gal.sendMail("Abba", "BBB");
+		gal.sendMail("Imma", "CCC");
+		gal.sendMail("Yoni", "DDD");
+		gal.sendMail("Bloch", "EEE");
+		gal.sendMail("Safta", "FFF");
 
+		assertEquals(gal.getContacts(6), Arrays.asList("Abba", "Bloch", "Imma", "Itay", "Safta", "Yoni"));
+	}
+
+	@Test
+	public void receiversShouldHaveAMessage() {
+		ClientMailApplication gal = buildClient("Gal");
+		gal.sendMail("Itay", "AAA");
+		gal.sendMail("Abba", "BBB");
+		gal.sendMail("Imma", "CCC");
+		gal.sendMail("Yoni", "DDD");
+		gal.sendMail("Bloch", "EEE");
+		gal.sendMail("Safta", "FFF");
+		ClientMailApplication itay = buildClient("Itay");
+		ClientMailApplication Abba = buildClient("Abba");
+		ClientMailApplication Imma = buildClient("Imma");
+		ClientMailApplication Yoni = buildClient("Yoni");
+		ClientMailApplication Bloch = buildClient("Bloch");
+		ClientMailApplication Safta = buildClient("Safta");
+		
+		assertEquals(itay.getNewMail(), Arrays.asList(new Mail("Gal", "Itay", "AAA")));
+		assertEquals(Abba.getNewMail(), Arrays.asList(new Mail("Gal", "Abba", "BBB")));
+		assertEquals(Imma.getNewMail(), Arrays.asList(new Mail("Gal", "Imma", "CCC")));
+		assertEquals(Yoni.getNewMail(), Arrays.asList(new Mail("Gal", "Yoni", "DDD")));
+		assertEquals(Bloch.getNewMail(), Arrays.asList(new Mail("Gal", "Bloch", "EEE")));
+		assertEquals(Safta.getNewMail(), Arrays.asList(new Mail("Gal", "Safta", "FFF")));
+		assertEquals(gal.getContacts(6), Arrays.asList("Abba", "Bloch", "Imma", "Itay", "Safta", "Yoni"));
+	}
+	
+	@Test
+	public void userShouldBeAbleToSentMailToItself() {
+		ClientMailApplication gal = buildClient("Gal");
+		gal.sendMail("Gal", "Hi me!");
+		assertEquals(gal.getNewMail(), Arrays.asList(new Mail("Gal", "Gal", "Hi me!")));
+	}
 
 	
 //	@Test

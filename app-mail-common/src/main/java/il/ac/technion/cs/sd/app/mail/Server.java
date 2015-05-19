@@ -4,8 +4,12 @@ import il.ac.technion.cs.sd.msg.Messenger;
 import il.ac.technion.cs.sd.msg.MessengerException;
 import il.ac.technion.cs.sd.msg.MessengerFactory;
 
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,20 +17,23 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.RuntimeErrorException;
+
 import org.json.JSONObject;
 
 class Server {
-
+	private File databaseFile = new File("serialization.dat");
+	private ServerDatabase database = new ServerDatabase();
+	
 	private String name;
 	private String address;
 	private static final String FROM_KEY = "from";
 	private Messenger _messenger;
 	
-	private HashMap<String, ArrayList<String>> userToContacts = new HashMap<>();
-	
-	private HashMap<String, LinkedList<Mail>> userToMailsSent = new HashMap<>();
-	private Map<String, LinkedList<Mail>> userToAllMails = new HashMap<>();
-	private Map<String, LinkedList<Mail>> userToNewMails = new HashMap<>();
+//	private HashMap<String, ArrayList<String>> userToContacts = new HashMap<>();
+//	private HashMap<String, LinkedList<Mail>> userToMailsSent = new HashMap<>();
+//	private Map<String, LinkedList<Mail>> userToAllMails = new HashMap<>();
+//	private Map<String, LinkedList<Mail>> userToNewMails = new HashMap<>();
 	
 	
 	Server(String name, String address) {
@@ -45,32 +52,7 @@ class Server {
 		return address;
 	}
 	
-	private void addMailSentFromUser(String sender, Mail mail) {
-		LinkedList<Mail> list = (LinkedList<Mail>) userToMailsSent.get(sender);
-		if (list == null) {
-			list = new LinkedList<Mail>();
-		}
-		list.addFirst(mail);
-		userToMailsSent.put(sender, list);
-	}
 	
-	private void addNewMessageToUser(String receiver, Mail mail) {
-		LinkedList<Mail> list = (LinkedList<Mail>) userToNewMails.get(receiver);
-		if (list == null) {
-			list = new LinkedList<Mail>();
-		}
-		list.addFirst(mail);
-		userToNewMails.put(receiver, list);
-	}
-	
-	private void addMailToUser(String receiver, Mail mail) {
-		LinkedList<Mail> list = (LinkedList<Mail>) userToAllMails.get(receiver);
-		if (list == null) {
-			list = new LinkedList<Mail>();
-		}
-		list.addFirst(mail);
-		userToAllMails.put(receiver, list);
-	}
 	
 //	private List<Mail> getUserMails(String username) {
 //		return userToAllMails.get(username);
@@ -86,35 +68,7 @@ class Server {
 				// received message - handle request
 				handleRequest(request); // TODO - continue implementing
 				
-				
-				System.out.println("Server Recieved: " + request);
-//				String[] tokens = request.split(">");
-//				String sender = tokens[0];
-//				String whom = tokens[1];
-//				request = tokens[2];
-				
-//				if (request.equals("GET NEW MAIL")) {
-//					List<String> allMails = getUserMails(sender);
-//					
-//					
-//					JSONObject json = new JSONObject();
-//					json.put("answer", allMails);
-////					json.writeJSONString(out);
-//					Writer writer = new StringWriter();
-//					json.write(writer);
-//					String jsonString = json.toString();
-//					
-//					_messenger.send(sender, jsonString.getBytes());
-//				} 
-//				else {
-//					addMailSentToUser(sender, request); // outbox of the sender
-//					addNewMessageToUser(whom, request);					
-//				}
-				
-				
-				
-//				UserMessagesMapper.getInstance().addMessageToUser(sender, whom, message);
-				
+				System.out.println("Server Recieved: " + request);				
 			}
 		}
 		catch (MessengerException e) {
@@ -131,19 +85,19 @@ class Server {
 			String whom = json.getString("to");
 			String message = json.getString("message");
 			Mail mail = new Mail(sender, whom, message);
-			addMailSentFromUser(sender, mail); // outbox of the sender
-			addNewMessageToUser(whom, mail);
-			addMailToUser(sender, mail);
-			addMailToUser(whom, mail);
-			addContactIfNotExist(sender, whom);
-			addContactIfNotExist(whom, sender);
+			database.addMailSentFromUser(sender, mail); // outbox of the sender
+			database.addNewMessageToUser(whom, mail);
+			database.addMailToUser(sender, mail);
+			database.addMailToUser(whom, mail);
+			database.addContactIfNotExist(sender, whom);
+			database.addContactIfNotExist(whom, sender);
 			return;
 		}
 		
 		if (type == RequestType.REQUEST_GET_NEW_MAIL.ordinal()) {
 			String username = json.getString(FROM_KEY);
 			// TODO - change it later to New Mails
-			List<Mail> list = userToAllMails.get(username);
+			List<Mail> list = database.getNewMailsOfUser(username);
 //			if (list == null) {
 //			}
 			JSONObject answerJson = new JSONObject();
@@ -162,7 +116,7 @@ class Server {
 		
 		if (type == RequestType.REQUEST_GET_ALL_MAIL.ordinal()) {
 			String username = json.getString(FROM_KEY);
-			List<Mail> list = userToAllMails.get(username);
+			List<Mail> list = database.getAllMailsOfUser(username);
 			JSONObject answerJson = new JSONObject();
 
 			answerJson.put(ResponseType.RESPONSE_KEY, ResponseType.GET_ALL_MAIL);
@@ -180,7 +134,7 @@ class Server {
 		
 		if (type == RequestType.REQUEST_CONTACTS.ordinal()) {
 			String sender = json.getString(FROM_KEY);
-			List<String> contacts = userToContacts.get(sender);
+			List<String> contacts = database.getContactsOfUser(sender);
 			if (contacts == null) {
 				// no contacts -> return an empty list
 				contacts = new ArrayList<String>();
@@ -210,20 +164,7 @@ class Server {
 		return strings;
 	}
 	
-	private void addContactIfNotExist(String user, String newContact) {
-		ArrayList<String> contacts = userToContacts.get(user);
-		if (contacts == null) {
-			contacts = new ArrayList<String>();
-		}
-		
-		int index = Collections.binarySearch(contacts, newContact);
-		if (index > 0) {
-			// the contact exists -> nothing to do
-			return;
-		}
-		contacts.add(Math.abs(index)-1, newContact);
-		userToContacts.put(user, contacts);
-	}
+	
 	
 	private void userToAllMails(String whom, String message) {
 		// TODO Auto-generated method stub
@@ -245,7 +186,45 @@ class Server {
 	}
 	
 	void clean() {
-		// TODO - Remove database
-		throw new UnsupportedOperationException("Not implemented");
+		// Stop the server
+		stop();
+		databaseFile.delete();
+	}
+	
+	
+	private void saveState() {
+		try {
+			if (databaseFile.exists() == false) {
+				databaseFile.createNewFile(); // throws IOException
+			}
+			FileOutputStream fileout = new FileOutputStream(databaseFile);
+			ObjectOutputStream objectStream = new ObjectOutputStream(fileout);
+	
+			objectStream.writeObject(database);
+			objectStream.flush();
+			objectStream.close();
+			fileout.close();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException();
+		}
+	}
+
+	private void readState() {
+		try {
+			FileInputStream fileinput = new FileInputStream(databaseFile);
+			ObjectInputStream objectStream = new ObjectInputStream(fileinput);
+			try {
+				database = (ServerDatabase) objectStream.readObject();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+			fileinput.close();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException();
+		}
 	}
 }
