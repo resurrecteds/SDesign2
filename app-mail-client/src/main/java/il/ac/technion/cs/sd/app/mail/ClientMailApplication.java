@@ -64,16 +64,11 @@ public class ClientMailApplication {
 	 * of size n <i>at most</i>  
 	 */
 	public List<Mail> getCorrespondences(String whom, int howMany) {
-		try {
-			JSONObject json = new GetCorrespondecesRequest(username, whom, howMany).getJsonObject();
-			String message = json.toString();
-			System.out.println("Sending mail: " + message);
-			messenger.send(serverAddress, message.getBytes());
-		}
-		catch(MessengerException e) {
-			e.printStackTrace();
-		}
-		return null;
+		JSONObject json = new GetCorrespondencesRequest(username, whom, howMany).getJsonObject();
+		JSONObject jsonAnswer = communicateWithServer(json);
+		JSONArray mailsJson = (JSONArray) jsonAnswer.get("conversation");
+		List<Mail> conversation = stringListToMailList(mailsJson, howMany);
+		return conversation;
 	}
 	
 	/**
@@ -105,7 +100,7 @@ public class ClientMailApplication {
 	public List<Mail> getAllMail(int howMany) {
 		List<Mail> mails = null; // shouldn't be null at the end
 		try {
-			JSONObject json = new NewMailRequest(username).getJsonObject();
+			JSONObject json = new AllMailsRequest(username).getJsonObject();
 			String message = json.toString();
 			System.out.println("Sending message to server: " + message);
 			messenger.send(serverAddress, message.getBytes());
@@ -136,6 +131,21 @@ public class ClientMailApplication {
 //			return;
 //		}
 //	}
+	private JSONObject communicateWithServer(JSONObject jsonRequest) {
+		JSONObject jsonAnswer = null;
+		try {
+			String message = jsonRequest.toString();
+			System.out.println("Sending message to server: " + message);
+			messenger.send(serverAddress, message.getBytes());
+			String answer = new String(messenger.listen());
+			jsonAnswer = new JSONObject(answer);
+		}
+		catch (MessengerException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		return jsonAnswer;
+	}
 
 	/**
 	 * Get all mail sent <b>to</b> the current user that wasn't retrieved by any method yet
@@ -149,7 +159,7 @@ public class ClientMailApplication {
 		try {
 			JSONObject json = new NewMailRequest(username).getJsonObject();
 			String message = json.toString();
-			System.out.println("Sending message to server: " + message);
+			
 			messenger.send(serverAddress, message.getBytes());
 			
 			String answer = new String(messenger.listen());

@@ -6,19 +6,13 @@ import il.ac.technion.cs.sd.msg.MessengerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-
-import javax.management.RuntimeErrorException;
 
 import org.json.JSONObject;
 
@@ -107,6 +101,7 @@ class Server {
 			database.addMailToUser(whom, mail);
 			database.addContactIfNotExist(sender, whom);
 			database.addContactIfNotExist(whom, sender);
+			database.addMailBetweenUsers(sender, whom, mail);
 			return;
 		}
 		
@@ -143,7 +138,7 @@ class Server {
 			}
 			catch (MessengerException e) {
 				e.printStackTrace();
-				throw new RuntimeException();
+				throw new RuntimeException(e);
 			}
 			return;
 		}
@@ -164,6 +159,26 @@ class Server {
 			}
 			catch (MessengerException e) {
 				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+			return;
+		}
+		
+		if (type == RequestType.REQUEST_GET_CORRESPONDENCES.ordinal()) {
+			String sender = json.getString(GetCorrespondencesRequest.JSONKey.USER);
+			String corresponder = json.getString(GetCorrespondencesRequest.JSONKey.CORRESPONDER);
+			
+			List<Mail> conversation = database.getConversationBetweenUsers(sender, corresponder);
+			List<String> chatStr = mailListToStringList(conversation);
+			
+			JSONObject answerJson = new JSONObject();
+			answerJson.put("conversation", chatStr);
+			try {
+				_messenger.send(sender, answerJson.toString().getBytes());
+			}
+			catch (MessengerException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
 			return;
 		}

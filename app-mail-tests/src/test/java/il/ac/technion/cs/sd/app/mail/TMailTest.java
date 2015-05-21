@@ -4,12 +4,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TMailTest {
@@ -121,6 +119,58 @@ public class TMailTest {
 		ClientMailApplication gal = buildClient("Gal");
 		gal.sendMail("Gal", "Hi me!");
 		assertEquals(gal.getNewMail(), Arrays.asList(new Mail("Gal", "Gal", "Hi me!")));
+	}
+	
+	@Test
+	public void shouldReturnAllMails() {
+		ClientMailApplication gal = buildClient("Gal");
+		gal.sendMail("Itay", "Hi");
+		gal.sendMail("Yossi", "Bye");
+		
+		ClientMailApplication itay = buildClient("Itay");
+		assertEquals(itay.getAllMail(10), Arrays.asList(new Mail("Gal", "Itay", "Hi")));
+		assertEquals(gal.getAllMail(10), Arrays.asList(new Mail("Gal", "Yossi", "Bye"), new Mail("Gal", "Itay", "Hi")));
+		
+		gal.sendMail("Dana", "How you doin'?");
+		assertEquals(gal.getAllMail(10), Arrays.asList(new Mail("Gal", "Dana", "How you doin'?"),
+				new Mail("Gal", "Yossi", "Bye"), new Mail("Gal", "Itay", "Hi")));
+		itay.sendMail("Gal", "Leave her alone!");
+		
+		assertEquals(gal.getAllMail(10), Arrays.asList(new Mail("Itay", "Gal", "Leave her alone!"),
+				new Mail("Gal", "Dana", "How you doin'?"),
+				new Mail("Gal", "Yossi", "Bye"), new Mail("Gal", "Itay", "Hi")));
+		itay.sendMail("Gal", "I said: Leave her alone!");
+		gal.sendMail("Itay", "OK, OK. Fine. I didn't want her anyway...");
+		assertEquals(gal.getAllMail(10), Arrays.asList(
+				new Mail("Gal", "Itay", "OK, OK. Fine. I didn't want her anyway..."),
+				new Mail("Itay", "Gal", "I said: Leave her alone!"),
+				new Mail("Itay", "Gal", "Leave her alone!"),
+				new Mail("Gal", "Dana", "How you doin'?"),
+				new Mail("Gal", "Yossi", "Bye"), new Mail("Gal", "Itay", "Hi")));
+	}
+	
+	@Test
+	public void mailThatWasRetrievedByGetAllMailShouldNotBeRetrivedByGetNewMail() {
+		ClientMailApplication gal = buildClient("Gal");
+		gal.sendMail("Itay", "AAA");
+		gal.sendMail("Itay", "BBB");
+		ClientMailApplication Itay = buildClient("Itay");
+		assertEquals(Itay.getAllMail(2), Arrays.asList(
+				new Mail("Gal", "Itay", "BBB"),
+				new Mail("Gal", "Itay", "AAA")));
+		
+		assertEquals(Itay.getNewMail(), Arrays.asList());
+	}
+	
+	@Test
+	public void testCorrespondences() {
+		ClientMailApplication gal = buildClient("Gal");
+		gal.sendMail("Itay", "How are you");
+		
+		ClientMailApplication itay = buildClient("Itay");
+		assertEquals(itay.getAllMail(10), Arrays.asList(new Mail("Gal", "Itay", "How are you")));
+		assertEquals(itay.getCorrespondences("Gal", 10), Arrays.asList(new Mail("Gal", "Itay", "How are you")));
+//		itay.sendMail("Gal", "I'm good, how are you?");
 	}
 
 	

@@ -16,7 +16,52 @@ class ServerDatabase implements Serializable {
 	private HashMap<String, LinkedList<Mail>> userToMailsSent = new HashMap<>();
 	private Map<String, LinkedList<Mail>> userToAllMails = new HashMap<>();
 	private Map<String, LinkedList<Mail>> userToNewMails = new HashMap<>();
+	private Map<Pair<String, String>, LinkedList<Mail>> pairOfUsersToConversation = new HashMap<>();
 	
+	private class Pair<X, Y> {
+		private final X x;
+		private final Y y;
+		Pair(X x, Y y) {
+			this.x = x;
+			this.y = y;
+		}
+		
+	}
+	
+	void addMailBetweenUsers(String user1, String user2, Mail message) {
+		Pair<String, String> pair = getPairOfUsers(user1, user2);
+		List<Mail> conversation = pairOfUsersToConversation.get(pair);
+		if (conversation == null) {
+			conversation = new LinkedList<Mail>();
+		}
+		
+//		pairOfUsersToConversation.put(pair, )
+		
+	}
+	
+	private Pair<String, String> getPairOfUsers(String user1, String user2) {
+		Pair<String, String> pair = null;
+		if (user1.compareToIgnoreCase(user2) < 0) {
+			pair = new Pair<String, String>(user1, user2);
+		}
+		else {
+			pair = new Pair<String, String>(user2, user1);
+		}
+		assert(pair != null);
+		return pair;
+	}
+	
+	List<Mail> getConversationBetweenUsers(String user1, String user2) {
+		// the users in the tuple are sorted alphabetically
+		Pair<String, String> pair = getPairOfUsers(user1, user2);
+		
+		LinkedList<Mail> conversation = pairOfUsersToConversation.get(pair);
+		if (conversation == null) {
+			// return empty list to indicate no conversation between the two users
+			return new LinkedList<Mail>();
+		}
+		return conversation;
+	}
 	
 	void addContactIfNotExist(String user, String newContact) {
 		ArrayList<String> contacts = userToContacts.get(user);
